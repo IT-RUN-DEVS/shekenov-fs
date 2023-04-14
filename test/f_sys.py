@@ -2,26 +2,19 @@ import os
 from pathlib import Path
 from zipfile import ZipFile
 from datetime import date, datetime
-import json
 
 # функцию создания нового файла (create).
-def create(name, text = None, j_format = False):
+def create(name, text = None):
     while os.path.exists(name):
         name = input( 'Такой файл уже существует, введите другое имя файла:')
-    # если текст передан но ключ json False
-    if text is not None and not j_format:
+
+    if text is not None:
         with open(name, 'w+') as f:
             f.write(text)
-        print(f'Файл {name} с данными успешно создан')
-    # если ключ json True
-    elif text is not None and j_format:
-        with open(name, 'w+') as f:
-            json.dump(text, f)
-        print(f'Файл {name} с json данными успешно создан')
-    # Если передано только имя файла
+        print(f'Файл {name} успешно создан и в него добавлены данные: {text}')
     else:
         open(name, 'w+')
-        print(f'Пустой файл {name} успешно создан')
+        print(f'Файл {name} успешно создан')
     return name
 
 
@@ -32,11 +25,9 @@ def list(directory = None):
         while not os.path.exists(directory):
             directory = input('Такой директории не существует, введите другую:')
     files = os.listdir(directory)
-    if directory is None:
-        directory = ''
     # добавляем к названию директории "/", для удобства просмотра
     for i in range(len(files)):
-        if os.path.isdir(directory+files[i]):
+        if os.path.isdir(files[i]):
             files[i] += '/'
     print(files)
     return  files
@@ -108,34 +99,19 @@ def init(directories):
 
 # функцию создания снимка файловой системы (snapshot).
 def snapshot(directories):
-    # создаем уникальное имя для каждого снепшота (дата и время могут использоваться как уникальные id)
-    snap_name = 'snapshot_' + f'{date.today()}({datetime.now().hour}_{datetime.now().minute}_{datetime.now().second}).json'
-    # проверка на существование вводимой дирректории
+    snap_name = 'snapshot_' + f'{date.today()}({datetime.now().hour}_{datetime.now().minute})'
     while not os.path.exists(directories):
         directories = input('Такой файловой системы не существует, попробуйте еще раз:')
     snap = {}
-    # вытаскиваем все файлы в файловой системе
-
-    for address, dirs, files in os.walk(directories):
-        all_files = [os.path.join(address, name) for name in files]
-        # если файловая система не содержит файлов то завершаем работу функции
-        if not all_files:
-            print(f"Файловая система '{directories}' пуста, снепшот снят не будет")
-            return False
-        else:
-            for each_file in all_files:
-                data = {}
-                file = open(each_file, 'r')
-                l_n = 1
-                for line in file:
-                    data[l_n] = line
-                    l_n += 1
-                snap[each_file] = data
-    # создаем новый снепшот файл json формата, используя нашу функцию create
-    new_snapshot = create(snap_name, snap, True)
-    # премещаем в папку 'spanshots/'
+    for each in list(directories):
+        if os.path.isfile(each):
+            file = open(each, 'r')
+            l_n = 1
+            for line in file:
+                snap[each][l_n] = line
+                l_n += 1
+    new_snapshot = create(snap_name, snap)
     move(new_snapshot, 'snapshots/')
-    print(f"Снепшот файловой системы '{directories}' успешно снят и помещен в папку 'snapshots'")
 
 
 
@@ -167,4 +143,13 @@ def backup(directories):
 
 
 
-
+snapshot('test/')
+# backup('test')
+# create('hello.txt')
+# list()
+# copy('', 'backup',)
+# move('test/test_2/hello_опия_2.txt','')
+# move('hello_копия_3.txt', 'test/test_2/index.txt')
+# init('file/file1/file3')
+# {"test1234":
+#      {"95": "# create('hello.txt')"}}
