@@ -1,5 +1,3 @@
-import os.path
+import os
 
-for address, dirs, files in os.walk('test/'):
-    for name in files:
-        print(os.path.join(address, name))
+os.mkdir('hello/')
